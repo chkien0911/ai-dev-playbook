@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Config Cheatsheet — Claude Code & GitHub Copilot</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --surface2: #1a1e28;
+    --border: #232736;
+    --border2: #2d3248;
+    --cc: #f97316;       /* Claude Code orange */
+    --cc-dim: #f9731620;
+    --cc-border: #f9731640;
+    --gh: #7c6af5;       /* GitHub Copilot purple */
+    --gh-dim: #7c6af520;
+    --gh-border: #7c6af540;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #475569;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 32px 28px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    color: #f8fafc;
+  }
+  .tagline {
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.5px;
+    margin-bottom: 24px;
+  }
+
+  /* ── LEGEND PILLS ── */
+  .legend {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  .pill-cc { background: var(--cc-dim); color: var(--cc); border: 1px solid var(--cc-border); }
+  .pill-gh { background: var(--gh-dim); color: var(--gh); border: 1px solid var(--gh-border); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dot-cc { background: var(--cc); }
+  .dot-gh { background: var(--gh); }
+  .pill-det { background: #22c55e18; color: var(--green); border: 1px solid #22c55e33; }
+  .pill-prob { background: #f59e0b18; color: var(--yellow); border: 1px solid #f59e0b33; }
+
+  /* ── MAIN GRID: 2 COL SIDE BY SIDE ── */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  /* ── SECTION HEADERS ── */
+  .col-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .col-header-cc { background: var(--cc-dim); color: var(--cc); border: 1px solid var(--cc-border); }
+  .col-header-gh { background: var(--gh-dim); color: var(--gh); border: 1px solid var(--gh-border); }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+  }
+  .card-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: #f8fafc;
+  }
+  .card-body {
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ── BADGES ── */
+  .badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .badge-auto  { background: #22c55e18; color: var(--green);  border: 1px solid #22c55e30; }
+  .badge-manual{ background: #3b82f618; color: #60a5fa;       border: 1px solid #3b82f630; }
+  .badge-semi  { background: #f59e0b18; color: var(--yellow); border: 1px solid #f59e0b30; }
+  .badge-det   { background: #22c55e18; color: var(--green);  border: 1px solid #22c55e30; }
+  .badge-prob  { background: #f59e0b18; color: var(--yellow); border: 1px solid #f59e0b30; }
+  .badge-block { background: #ef444418; color: var(--red);    border: 1px solid #ef444430; }
+
+  /* ── ROW: label + value ── */
+  .row {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 6px;
+    align-items: start;
+    font-size: 12px;
+  }
+  .row-label {
+    color: var(--text3);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding-top: 1px;
+  }
+  .row-val { color: var(--text2); line-height: 1.4; }
+  code {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: var(--surface2);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: #cbd5e1;
+  }
+
+  /* ── FILE PATH ── */
+  .filepath {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    padding: 5px 12px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── BULLET LIST inside card ── */
+  .blist { list-style: none; display: flex; flex-direction: column; gap: 3px; }
+  .blist li { display: flex; gap: 6px; align-items: start; font-size: 12px; color: var(--text2); line-height: 1.4; }
+  .blist li::before { content: "·"; color: var(--text3); flex-shrink: 0; margin-top: 0px; }
+  .blist.anti li::before { content: "✗"; color: var(--red); font-size: 10px; }
+  .blist.good li::before { content: "✓"; color: var(--green); font-size: 10px; }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+  /* ── HOOK EVENT TABLE ── */
+  .evt-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .evt-table th {
+    text-align: left;
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+  }
+  .evt-table td {
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+    vertical-align: top;
+  }
+  .evt-table tr:last-child td { border-bottom: none; }
+  .evt-table tr:hover td { background: var(--surface2); }
+  .can-block { color: var(--red); font-weight: 600; }
+
+  /* ── DECISION MATRIX ── */
+  .matrix-section {
+    grid-column: 1 / -1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .matrix-head {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text2);
+  }
+  .matrix-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  .matrix-col { padding: 12px 14px; }
+  .matrix-col:first-child { border-right: 1px solid var(--border); }
+  .matrix-col-head {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .matrix-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+    font-size: 12px;
+  }
+  .matrix-row:last-child { border-bottom: none; }
+  .matrix-need { color: var(--text2); }
+  .matrix-ans {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: #f8fafc;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  /* ── MENTAL MODEL ── */
+  .mental-section {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .layer-card {
+    border-radius: 6px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+  }
+  .layer-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    opacity: 0.7;
+  }
+  .layer-title { font-size: 13px; font-weight: 600; color: #f8fafc; margin-bottom: 4px; }
+  .layer-items { font-family: var(--mono); font-size: 11px; color: var(--text3); margin-bottom: 6px; }
+  .layer-desc { font-size: 11px; color: var(--text2); line-height: 1.5; }
+  .layer-meta { font-size: 10px; margin-top: 4px; }
+
+  .layer-1-cc { background: linear-gradient(135deg, #131720, #1a1e2e); border-color: #3b82f633; }
+  .layer-1-gh { background: linear-gradient(135deg, #131720, #1a1e2e); border-color: #3b82f633; }
+  .layer-2 { background: linear-gradient(135deg, #131720, #1a201e); border-color: #22c55e22; }
+  .layer-3-cc { background: linear-gradient(135deg, #131720, #1e1a13); border-color: #f9731633; }
+  .layer-3-gh { background: linear-gradient(135deg, #131720, #1b1820); border-color: #7c6af533; }
+  .layer-4 { background: linear-gradient(135deg, #1a1313, #1e1313); border-color: #ef444433; }
+
+  /* ── CROSS-REF ── */
+  .crossref {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+  .crossref-eq  { border-color: #22c55e33; color: #86efac; background: #22c55e0d; }
+  .crossref-sim { border-color: #f59e0b33; color: #fcd34d; background: #f59e0b0d; }
+  .crossref-no  { border-color: #ef444433; color: #fca5a5; background: #ef44440d; }
+
+  /* ── GOLDEN RULE ── */
+  .golden {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .golden-card {
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .golden-card strong { color: #f8fafc; }
+
+  /* ── FOOTER ── */
+  .footer {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-size: 10px;
+    color: var(--text3);
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>AI Config Constructs — Cheatsheet</h1>
+</div>
+<div class="tagline">Claude Code &nbsp;·&nbsp; GitHub Copilot &nbsp;·&nbsp; April 2026</div>
+
+<div class="legend">
+  <span class="pill pill-cc"><span class="dot dot-cc"></span>Claude Code</span>
+  <span class="pill pill-gh"><span class="dot dot-gh"></span>GitHub Copilot</span>
+  <span class="pill pill-det">✅ Deterministic</span>
+  <span class="pill pill-prob">⚠ Probabilistic</span>
+  <span class="badge badge-auto">auto</span> = fires automatically &nbsp;
+  <span class="badge badge-manual">manual</span> = user triggers &nbsp;
+  <span class="badge badge-semi">semi-auto</span> = AI detects intent &nbsp;
+  <span class="badge badge-block">can block</span> = exit 2 stops action
+</div>
+
+<!-- ════════════════════════════════════════════
+     MAIN GRID
+═══════════════════════════════════════════════ -->
+<div class="grid">
+
+  <!-- ── COL HEADERS ── -->
+  <div class="col-header col-header-cc">● Claude Code</div>
+  <div class="col-header col-header-gh">● GitHub Copilot</div>
+
+  <!-- ═══ ALWAYS-ON MEMORY ═══ -->
+
+  <!-- CC: CLAUDE.md -->
+  <div class="card">
+    <div class="filepath">CLAUDE.md &nbsp;·&nbsp; ~/.claude/CLAUDE.md</div>
+    <div class="card-head">
+      <span class="card-title">CLAUDE.md</span>
+      <div style="display:flex;gap:5px">
+        <span class="badge badge-auto">auto</span>
+        <span class="badge badge-prob">~70% compliance</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row"><span class="row-label">Loads</span><span class="row-val">Every session start, resume, compaction. Walks up directory tree (nested files supported).</span></div>
+      <div class="row"><span class="row-label">Purpose</span><span class="row-val">Project-wide persistent memory — tech stack, conventions, build commands.</span></div>
+      <div class="row"><span class="row-label">Limit</span><span class="row-val">~150 meaningful lines max. Beyond that, Claude ignores the middle.</span></div>
+      <div class="divider"></div>
+      <ul class="blist good">
+        <li>Tech stack, banned libraries, architectural decisions</li>
+        <li>Build & test commands</li>
+        <li>Project-specific idioms Claude wouldn't know</li>
+      </ul>
+      <ul class="blist anti">
+        <li>Safety-critical rules (use Hooks)</li>
+        <li>Rules for a specific directory (use <code>.claude/rules/</code> with <code>paths</code>)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- GH: copilot-instructions.md -->
+  <div class="card">
+    <div class="filepath">.github/copilot-instructions.md</div>
+    <div class="card-head">
+      <span class="card-title">copilot-instructions.md</span>
+      <div style="display:flex;gap:5px">
+        <span class="badge badge-auto">auto</span>
+        <span class="badge badge-prob">probabilistic</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row"><span class="row-label">Loads</span><span class="row-val">Every Chat and Agent Mode request. No directory walk — single file only.</span></div>
+      <div class="row"><span class="row-label">Purpose</span><span class="row-val">Repo-wide baseline for all Copilot requests across all IDEs and GitHub.com.</span></div>
+      <div class="row"><span class="row-label">Note</span><span class="row-val">PR Code Review path is slightly different — if rules don't appear, reassign reviewer to reload.</span></div>
+      <div class="divider"></div>
+      <ul class="blist good">
+        <li>Team-wide coding standards, naming conventions</li>
+        <li>Banned libraries, preferred frameworks</li>
+        <li>Build & test commands for coding agent</li>
+      </ul>
+      <ul class="blist anti">
+        <li>File-type specific rules (use <code>.instructions.md</code> with <code>applyTo</code>)</li>
+        <li>Safety enforcement (use Hooks)</li>
+      </ul>
+      <div class="crossref crossref-eq">≈ CLAUDE.md</div>
+    </div>
+  </div>
+
+  <!-- ═══ PATH-SCOPED RULES ═══ -->
+
+  <!-- CC: .claude/rules/ -->
+  <div class="card">
+    <div class="filepath">.claude/rules/*.md</div>
+    <div class="card-head">
+      <span class="card-title">Rules / .claude/rules/</span>
+      <div style="display:flex;gap:5px">
+        <span class="badge badge-auto">auto</span>
+        <span class="badge badge-prob">probabilistic</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row"><span class="row-label">No <code>paths</code></span><span class="row-val">Loaded every session — same priority as CLAUDE.md. Good for organizing global rules by topic.</span></div>
+      <div class="row"><span class="row-label">With <code>paths</code></span><span class="row-val">Loaded on demand when Claude <strong>reads</strong> a file matching the glob. ⚠ Does not trigger on write without prior read.</span></div>
+      <div class="divider"></div>
+      <div style="font-family:var(--mono);font-size:11px;background:var(--surface2);padding:8px;border-radius:4px;color:#94a3b8;line-height:1.8">
+        <span style="color:#475569">---</span><br>
+        <span style="color:#86efac">paths</span><span style="color:#475569">:</span><br>
+        <span style="padding-left:12px">- <span style="color:#fbbf24">"src/**/Consumers/**"</span></span><br>
+        <span style="color:#475569">---</span>
+      </div>
+      <ul class="blist good">
+        <li>MassTransit consumer rules → <code>paths: ["src/**/Consumers/**"]</code></li>
+        <li>xUnit test conventions → <code>paths: ["**/*.test.cs"]</code></li>
+        <li>API design rules (global, no paths) → always loaded</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- GH: .instructions.md -->
+  <div class="card">
+    <div class="filepath">.github/instructions/*.instructions.md</div>
+    <div class="card-head">
+      <span class="card-title">Path-Specific Instructions</span>
+      <div style="display:flex;gap:5px">
+        <span class="badge badge-auto">auto</span>
+        <span class="badge badge-prob">probabilistic</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row"><span class="row-label">Loads</span><span class="row-val">When Copilot processes request in context of files matching <code>applyTo</code> glob. Merged with global instructions.</span></div>
+      <div class="row"><span class="row-label">⚠ Required</span><span class="row-val">Must set <code>applyTo</code> for auto-loading. Files without it are ignored automatically.</span></div>
+      <div class="row"><span class="row-label">excludeAgent</span><span class="row-val"><code>"code-review"</code> or <code>"cloud-agent"</code> — prevent one agent from reading this file.</span></div>
+      <div class="divider"></div>
+      <div style="font-family:var(--mono);font-size:11px;background:var(--surface2);padding:8px;border-radius:4px;color:#94a3b8;line-height:1.8">
+        <span style="color:#475569">---</span><br>
+        <span style="color:#86efac">applyTo</span><span style="color:#475569">: </span><span style="color:#fbbf24">"**/*.test.ts"</span><br>
+        <span style="color:#86efac">excludeAgent</span><span style="color:#475569">: </span><span style="color:#fbbf24">"code-review"</span><br>
+        <span style="color:#475569">---</span>
+      </div>
+      <div class="crossref crossref-eq">≈ .claude/rules/ with paths</div>
+    </div>
+  </div>
+
+  <!-- ═══ CROSS-TOOL / AGENTS.md ═══ -->
+
+  <!-- CC: no equivalent row, span full left with a note -->
+  <div class="card" style="border-color:#22c55e22">
+    <div class="card-head">
+      <span class="card-title" style="color:#86efac">AGENTS.md — Cross-Tool Standard</span>
+      <span class="badge badge-auto">auto</span>
+    </div>
+    <div class="card-body">
+      <div class="row"><span class="row-label">What</span><span class="row-val">Open standard (Linux Foundation, Dec 2025). Portable across Copilot, Claude Code, Codex CLI, Cursor, Gemini CLI.</span></div>
+      <div class="row"><span class="row-label">Claude Code</span><span class="row-val">Reads <code>AGENTS.md</code> from repo root alongside <code>CLAUDE.md</code>.</span></div>
+      <div class="row"><span class="row-label">Copilot</span><span class="row-val">Reads alongside <code>copilot-instructions.md</code> for Chat + Coding Agent. <strong>Not</strong> supported by Code Review.</span></div>
+      <div class="divider"></div>
+      <ul class="blist good">
+        <li>Team uses both Copilot and Claude Code → single source of truth</li>
+        <li>Multi-tool org wanting one shared file</li>
+      </ul>
+      <ul class="blist anti">
+        <li>Copilot Code Review — keep <code>copilot-instructions.md</code> too</li>
+        <li>Don't duplicate same rules into both files</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- GH: AGENTS.md right col (same card, just styling note) -->
+  <div class="card" style="border-color:#22c55e22;background:linear-gradient(135deg,#13161e,#13201a)">
+    <div class="card-head">
+      <span class="card-title" style="color:#86efac">When to use which instructions file</span>
+    </div>
+    <div class="card-body">
+      <table class="evt-table">
+        <thead><tr><th>Scenario</th><th>Use</th></tr></thead>
+        <tbody>
+          <tr><td>Copilot only</td><td><code>copilot-instructions.md</code></td></tr>
+          <tr><td>Copilot + Claude Code</td><td><code>AGENTS.md</code> as source of truth</td></tr>
+          <tr><td>Need Code Review support</td><td>Keep <code>copilot-instructions.md</code> too</td></tr>
+          <tr><td>Path-scoped rules</td><td><code>.instructions.md</code> + <code>applyTo</code></td></tr>
+          <tr><td>Agent-only rules</td><td><code>.instructions.md</code> + <code>excludeAgent: "code-review"</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ ON-DEMAND: SKILLS + COMMANDS / PROMPTS ═══ -->
+
+  <!-- CC: Skills + Commands -->
+  <div class="card">
+    <div class="filepath">.claude/skills/*/SKILL.md &nbsp;·&nbsp; .claude/commands/*.md</div>
+    <div class="card-head">
+      <span class="card-title">Skills &amp; Commands</span>
+      <div style="display:flex;gap:5px">
+        <span class="badge badge-semi">semi-auto</span>
+        <span class="badge badge-manual">manual /name</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row"><span class="row-label">Skills</span><span class="row-val">Directory + <code>SKILL.md</code>. Startup: Claude reads only <code>name</code> + <code>description</code> (~100 tokens). Full body loads only when task matches. Supports supporting files + scripts (scripts execute; only stdout enters context).</span></div>
+      <div class="row"><span class="row-label">Commands</span><span class="row-val">Single <code>.md</code> file. Trigger only via <code>/name</code>. Simpler — no progressive disclosure. Use when no supporting files needed.</span></div>
+      <div class="divider"></div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Key frontmatter (SKILL.md)</div>
+      <table class="evt-table">
+        <tbody>
+          <tr><td><code>description</code></td><td>Discovery trigger. Third person. Include what + when.</td></tr>
+          <tr><td><code>disable-model-invocation: true</code></td><td>Manual only (user types /name). Claude won't auto-invoke.</td></tr>
+          <tr><td><code>user-invocable: false</code></td><td>Claude-only background knowledge. Never a slash command.</td></tr>
+          <tr><td><code>allowed-tools</code></td><td>Restrict tools (e.g. <code>Read Grep</code> = read-only).</td></tr>
+          <tr><td><code>context: fork</code></td><td>Run in isolated subagent context.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- GH: Skills + Prompts -->
+  <div class="card">
+    <div class="filepath">.github/skills/*/SKILL.md &nbsp;·&nbsp; .github/prompts/*.prompt.md</div>
+    <div class="card-head">
+      <span class="card-title">Skills &amp; Prompt Files</span>
+      <div style="display:flex;gap:5px">
+        <span class="badge badge-semi">semi-auto</span>
+        <span class="badge badge-manual">manual attach</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row"><span class="row-label">Skills</span><span class="row-val">Same SKILL.md format as Claude Code. Portable — same file works in both tools. Install path differs: <code>.github/skills/</code> (workspace) or <code>~/.copilot/skills/</code> (personal).</span></div>
+      <div class="row"><span class="row-label">Prompt files</span><span class="row-val">Developer manually attaches to a Chat session. Never auto-triggers. Support variable placeholders + <code>mode</code> frontmatter to scope to an agent.</span></div>
+      <div class="divider"></div>
+      <ul class="blist good">
+        <li>Skills: incident triage, release checklist, domain workflows</li>
+        <li>Prompt files: PR review, doc generation (attach when needed)</li>
+      </ul>
+      <ul class="blist anti">
+        <li>Rules always active → use instructions files instead</li>
+        <li>Safety enforcement → use Hooks</li>
+      </ul>
+      <div class="crossref crossref-eq">Skills ≈ Claude Code Skills (identical format)</div>
+      <div class="crossref crossref-eq" style="margin-top:4px">Prompt files ≈ Commands</div>
+    </div>
+  </div>
+
+  <!-- ═══ AGENTS ═══ -->
+
+  <!-- CC: Agents -->
+  <div class="card">
+    <div class="filepath">.claude/agents/*.md</div>
+    <div class="card-head">
+      <span class="card-title">Agents (Subagents)</span>
+      <div style="display:flex;gap:5px">
+        <span class="badge badge-semi">auto-delegate</span>
+        <span class="badge badge-manual">explicit</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row"><span class="row-label">Context</span><span class="row-val">Fully isolated context window. Main session stays clean. Agent returns a summary.</span></div>
+      <div class="row"><span class="row-label">Delegation</span><span class="row-val">Main Claude auto-spawns when task matches <code>description</code>, or developer says "use a subagent to…"</span></div>
+      <div class="divider"></div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Key frontmatter</div>
+      <table class="evt-table">
+        <tbody>
+          <tr><td><code>description</code></td><td>Critical — controls auto-delegation matching.</td></tr>
+          <tr><td><code>tools</code></td><td>Allow list (e.g. <code>Read, Grep, Glob</code> = read-only).</td></tr>
+          <tr><td><code>model</code></td><td><code>opus</code> for high-stakes, <code>haiku</code> for fast/cheap.</td></tr>
+          <tr><td><code>skills</code></td><td>Pre-load skill content into agent at startup.</td></tr>
+        </tbody>
+      </table>
+      <ul class="blist good">
+        <li>Audit 50 files without filling main context</li>
+        <li>Security reviewer: read-only tools, no file edits</li>
+        <li>Parallel builder + validator pattern</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- GH: Custom Agents -->
+  <div class="card">
+    <div class="filepath">.github/agents/*.agent.md</div>
+    <div class="card-head">
+      <span class="card-title">Custom Agents</span>
+      <div style="display:flex;gap:5px">
+        <span class="badge badge-manual">manual select</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row"><span class="row-label">Context</span><span class="row-val">Replaces default Copilot persona in the session. Developer selects from Chat panel dropdown or assigns to GitHub issue.</span></div>
+      <div class="row"><span class="row-label">Handoffs</span><span class="row-val">Unique Copilot feature — buttons after response that transition to the next agent with pre-filled context. Enables guided Plan → Implement → Review workflows.</span></div>
+      <div class="divider"></div>
+      <div style="font-family:var(--mono);font-size:11px;background:var(--surface2);padding:8px;border-radius:4px;color:#94a3b8;line-height:1.8">
+        <span style="color:#86efac">handoffs</span><span style="color:#475569">:</span><br>
+        <span style="padding-left:12px">- <span style="color:#86efac">label</span><span style="color:#475569">: </span><span style="color:#fbbf24">"Start Implementation"</span></span><br>
+        <span style="padding-left:14px"><span style="color:#86efac">agent</span><span style="color:#475569">: </span><span style="color:#fbbf24">implementation</span></span><br>
+        <span style="padding-left:14px"><span style="color:#86efac">send</span><span style="color:#475569">: </span><span style="color:#fbbf24">false</span></span>
+      </div>
+      <div class="crossref crossref-sim" style="margin-top:6px">≈ Claude Code Agents — but manual select vs auto-spawn</div>
+    </div>
+  </div>
+
+  <!-- ═══ HOOKS ═══ -->
+
+  <!-- CC: Hooks -->
+  <div class="card" style="border-color:#ef444430">
+    <div class="filepath">.claude/settings.json → "hooks"</div>
+    <div class="card-head">
+      <span class="card-title" style="color:#ef4444">Hooks</span>
+      <div style="display:flex;gap:5px">
+        <span class="badge badge-auto">auto</span>
+        <span class="badge badge-det">100% deterministic</span>
+        <span class="badge badge-block">can block</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row"><span class="row-label">Runs</span><span class="row-val">Outside LLM entirely. Shell/prompt/agent/http. Matcher = regex on tool name.</span></div>
+      <div class="divider"></div>
+      <table class="evt-table">
+        <thead><tr><th>Event</th><th>Cadence</th><th>Block?</th></tr></thead>
+        <tbody>
+          <tr><td><code>SessionStart</code></td><td>1×/session</td><td>—</td></tr>
+          <tr><td><code>UserPromptSubmit</code></td><td>1×/turn</td><td>—</td></tr>
+          <tr><td><code>PreToolUse</code></td><td>every tool</td><td class="can-block">exit 2 ✓</td></tr>
+          <tr><td><code>PostToolUse</code></td><td>every tool</td><td>—</td></tr>
+          <tr><td><code>Stop</code></td><td>1×/turn</td><td class="can-block">exit 2 = force continue</td></tr>
+          <tr><td><code>Notification</code></td><td>async</td><td>—</td></tr>
+          <tr><td><code>SubagentStop</code></td><td>per agent</td><td>—</td></tr>
+          <tr><td><code>PreCompact</code></td><td>on compact</td><td>—</td></tr>
+        </tbody>
+      </table>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+        <span style="font-size:11px;color:var(--text3)">Handler types:</span>
+        <code>command</code><code>prompt</code><code>agent</code><code>http</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- GH: Hooks -->
+  <div class="card" style="border-color:#ef444430">
+    <div class="filepath">.github/hooks/*.json</div>
+    <div class="card-head">
+      <span class="card-title" style="color:#ef4444">Hooks</span>
+      <div style="display:flex;gap:5px">
+        <span class="badge badge-auto">auto</span>
+        <span class="badge badge-det">100% deterministic</span>
+        <span class="badge badge-block">can block</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row"><span class="row-label">Runs</span><span class="row-val">Outside LLM. Shell only (<code>bash</code> + <code>powershell</code> keys). No matcher — all hooks for an event run for every occurrence.</span></div>
+      <div class="row"><span class="row-label">Deploy</span><span class="row-val">Must be on default branch for cloud agent. CLI loads from cwd.</span></div>
+      <div class="divider"></div>
+      <table class="evt-table">
+        <thead><tr><th>Event</th><th>Block?</th></tr></thead>
+        <tbody>
+          <tr><td><code>sessionStart</code></td><td>—</td></tr>
+          <tr><td><code>userPromptSubmitted</code></td><td>—</td></tr>
+          <tr><td><code>preToolUse</code></td><td class="can-block">JSON deny response ✓</td></tr>
+          <tr><td><code>postToolUse</code></td><td>—</td></tr>
+          <tr><td><code>errorOccurred</code></td><td>—</td></tr>
+          <tr><td><code>sessionEnd</code></td><td>—</td></tr>
+        </tbody>
+      </table>
+      <div style="font-family:var(--mono);font-size:10px;background:var(--surface2);padding:6px 8px;border-radius:3px;margin-top:4px;color:#94a3b8">
+        Block: <span style="color:#fbbf24">{"permissionDecision":"deny","permissionDecisionReason":"..."}</span>
+      </div>
+      <div class="crossref crossref-sim" style="margin-top:6px">≈ Claude Code Hooks — 6 events vs 20+, shell only vs 4 handler types</div>
+    </div>
+  </div>
+
+  <!-- ═══ DECISION MATRIX ═══ -->
+  <div class="matrix-section">
+    <div class="matrix-head">⚡ Quick Decision Matrix</div>
+    <div class="matrix-grid">
+      <div class="matrix-col">
+        <div class="matrix-col-head" style="color:var(--cc)">● Claude Code</div>
+        <div class="matrix-row"><span class="matrix-need">Always-on project memory</span><span class="matrix-ans">CLAUDE.md</span></div>
+        <div class="matrix-row"><span class="matrix-need">Global rules by topic (no path)</span><span class="matrix-ans">.claude/rules/*.md</span></div>
+        <div class="matrix-row"><span class="matrix-need">Rules only for a specific directory</span><span class="matrix-ans">.claude/rules/ + paths</span></div>
+        <div class="matrix-row"><span class="matrix-need">Prompt I type repeatedly</span><span class="matrix-ans">.claude/commands/</span></div>
+        <div class="matrix-row"><span class="matrix-need">Multi-step workflow + templates</span><span class="matrix-ans">.claude/skills/</span></div>
+        <div class="matrix-row"><span class="matrix-need">Audit 50 files, clean main context</span><span class="matrix-ans">.claude/agents/</span></div>
+        <div class="matrix-row"><span class="matrix-need">Block dangerous command 100%</span><span class="matrix-ans">Hook PreToolUse exit 2</span></div>
+        <div class="matrix-row"><span class="matrix-need">Auto-format after every edit</span><span class="matrix-ans">Hook PostToolUse</span></div>
+        <div class="matrix-row"><span class="matrix-need">Run tests before finish</span><span class="matrix-ans">Hook Stop exit 2</span></div>
+        <div class="matrix-row"><span class="matrix-need">Notify when Claude goes idle</span><span class="matrix-ans">Hook Notification</span></div>
+      </div>
+      <div class="matrix-col">
+        <div class="matrix-col-head" style="color:var(--gh)">● GitHub Copilot</div>
+        <div class="matrix-row"><span class="matrix-need">Always-on repo baseline</span><span class="matrix-ans">copilot-instructions.md</span></div>
+        <div class="matrix-row"><span class="matrix-need">Cross-tool (Copilot + Claude Code)</span><span class="matrix-ans">AGENTS.md</span></div>
+        <div class="matrix-row"><span class="matrix-need">Rules only for *.test.ts files</span><span class="matrix-ans">.instructions.md + applyTo</span></div>
+        <div class="matrix-row"><span class="matrix-need">Coding agent only (not PR review)</span><span class="matrix-ans">.instructions.md + excludeAgent</span></div>
+        <div class="matrix-row"><span class="matrix-need">Prompt I attach before a review</span><span class="matrix-ans">.github/prompts/</span></div>
+        <div class="matrix-row"><span class="matrix-need">Reusable workflow + templates</span><span class="matrix-ans">.github/skills/</span></div>
+        <div class="matrix-row"><span class="matrix-need">Specialist persona (read-only reviewer)</span><span class="matrix-ans">.github/agents/ + tools</span></div>
+        <div class="matrix-row"><span class="matrix-need">Guided Plan → Implement → Review</span><span class="matrix-ans">Custom agents + handoffs</span></div>
+        <div class="matrix-row"><span class="matrix-need">Block dangerous command 100%</span><span class="matrix-ans">Hook preToolUse deny JSON</span></div>
+        <div class="matrix-row"><span class="matrix-need">Audit all tool usage</span><span class="matrix-ans">Hook postToolUse → log</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MENTAL MODEL ═══ -->
+  <div class="mental-section">
+    <div class="layer-card layer-1-cc">
+      <div class="layer-num" style="color:#3b82f6">Layer 1 — Memory</div>
+      <div class="layer-title">Always-on Context</div>
+      <div class="layer-items">CLAUDE.md · .claude/rules/</div>
+      <div class="layer-desc">Global rules load every session. Path-scoped rules (<code>paths</code> frontmatter) load when Claude reads a matching file.</div>
+      <div class="layer-meta"><span class="badge badge-prob">probabilistic</span></div>
+    </div>
+    <div class="layer-card layer-1-gh">
+      <div class="layer-num" style="color:#3b82f6">Layer 1 — Memory</div>
+      <div class="layer-title">Always-on Context</div>
+      <div class="layer-items">copilot-instructions.md · AGENTS.md · .instructions.md</div>
+      <div class="layer-desc">Global file on every request. Path-scoped files (<code>applyTo</code>) on matching context. All merge together.</div>
+      <div class="layer-meta"><span class="badge badge-prob">probabilistic</span></div>
+    </div>
+
+    <div class="layer-card layer-2">
+      <div class="layer-num" style="color:#22c55e">Layer 2 — Knowledge Packages (Claude Code)</div>
+      <div class="layer-title">Skills + Commands</div>
+      <div class="layer-items">.claude/skills/ · .claude/commands/</div>
+      <div class="layer-desc">Skills: Claude auto-detects intent match. Commands: manual <code>/name</code>. Progressive disclosure — only relevant content loads.</div>
+      <div class="layer-meta"><span class="badge badge-semi">semi-auto</span> <span class="badge badge-manual">manual</span></div>
+    </div>
+    <div class="layer-card layer-2">
+      <div class="layer-num" style="color:#22c55e">Layer 2 — Knowledge Packages (Copilot)</div>
+      <div class="layer-title">Skills + Prompt Files</div>
+      <div class="layer-items">.github/skills/ · .github/prompts/</div>
+      <div class="layer-desc">Skills: same SKILL.md format, portable across tools. Prompt files: developer attaches manually per session.</div>
+      <div class="layer-meta"><span class="badge badge-semi">semi-auto</span> <span class="badge badge-manual">manual attach</span></div>
+    </div>
+
+    <div class="layer-card layer-3-cc">
+      <div class="layer-num" style="color:var(--cc)">Layer 3 — Delegation (Claude Code)</div>
+      <div class="layer-title">Agents / Subagents</div>
+      <div class="layer-items">.claude/agents/</div>
+      <div class="layer-desc">Isolated context window. Main Claude auto-spawns or developer instructs. Returns summary. Parallel execution possible.</div>
+      <div class="layer-meta"><span class="badge badge-semi">auto-spawn</span></div>
+    </div>
+    <div class="layer-card layer-3-gh">
+      <div class="layer-num" style="color:var(--gh)">Layer 3 — Personas (Copilot)</div>
+      <div class="layer-title">Custom Agents + Handoffs</div>
+      <div class="layer-items">.github/agents/</div>
+      <div class="layer-desc">Replaces default persona. Developer selects. Handoffs enable guided sequential workflows — human approves each step.</div>
+      <div class="layer-meta"><span class="badge badge-manual">manual select</span></div>
+    </div>
+
+    <div class="layer-card layer-4">
+      <div class="layer-num" style="color:var(--red)">Layer 4 — Enforcement (both tools)</div>
+      <div class="layer-title">Hooks</div>
+      <div class="layer-items">Claude: .claude/settings.json · Copilot: .github/hooks/*.json</div>
+      <div class="layer-desc">Runs outside the LLM. 100% guaranteed. Only mechanism that can truly block. Claude: 20+ events, 4 handler types. Copilot: 6 events, shell only.</div>
+      <div class="layer-meta"><span class="badge badge-det">100% deterministic</span> <span class="badge badge-block">can block</span></div>
+    </div>
+    <div class="layer-card" style="background:var(--surface2);border-color:var(--border2);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;padding:20px">
+      <div style="font-size:13px;font-weight:600;color:#f8fafc;text-align:center">Golden Rule</div>
+      <div style="font-size:12px;color:var(--text2);text-align:center;line-height:1.7">
+        Use <strong style="color:var(--cc)">CLAUDE.md</strong> / <strong style="color:var(--gh)">copilot-instructions.md</strong><br>
+        for what the AI <em>should</em> do.<br><br>
+        Use <strong style="color:var(--red)">Hooks</strong><br>
+        for what it <em>must</em> do.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FOOTER ═══ -->
+  <div class="footer">
+    Sources: code.claude.com &nbsp;·&nbsp; docs.github.com &nbsp;·&nbsp; code.visualstudio.com &nbsp;·&nbsp; platform.claude.com — verified April 2026
+  </div>
+
+</div><!-- /grid -->
+</body>
+</html>
